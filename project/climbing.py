@@ -98,8 +98,8 @@ def print_wall(wall):
         print("")
 
 def print_wall_with_climber(wall,climber):
-    i,j=0,0
-    for h_wall in wall:
+    i,j=len(wall)-1,0
+    for h_wall in reversed(wall):
         j=0
         for hold in h_wall:
             symbol = climber.GetSymbol(i,j)
@@ -109,7 +109,7 @@ def print_wall_with_climber(wall,climber):
                 print(hold, end='')
             j=j+1
         print("")
-        i=i+1
+        i=i-1
     print()
 
 visited_dict = dict()
