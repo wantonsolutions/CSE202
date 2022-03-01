@@ -1,5 +1,7 @@
 import copy
 from walls import *
+import os
+import time
 
 def manhattan_distance(A,B):
     return abs(A[0]-B[0])+abs(A[1]-B[1])
@@ -65,8 +67,21 @@ class Climber:
             return "D"
         return None
 
-    def Get_Limbs(self):
+    def GetPresetLimbs(self):
         return [self.left_arm,self.right_arm,self.left_leg,self.right_leg]
+
+    def GetLowestLimb(self):
+        limbs = self.GetPresetLimbs()
+        slims = sorted(limbs, key=lambda l: l.position[0])
+        # for l in slims:
+        #     print(l.position)
+        # print()
+        return slims
+
+
+    def Get_Limbs(self):
+        #return self.GetPresetLimbs()
+        return self.GetLowestLimb()
 
     
     def valid(self):
@@ -111,15 +126,21 @@ def can_complete(climber,wall,visited_dict):
             return True
     return False
 
-def print_path(climber,wall,visited):
+def print_path(climber,wall,visited,animate=True):
     print("SOLUTION FOUND Printing path")
     moves=0
     current_node = climber.pos_tuple()
     while current_node != visited[current_node]:
-        moves=moves+1
-        print_wall_with_climber(wall,climber)
+        if(animate==True):
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print_wall_with_climber(wall,climber)
+            time.sleep(0.1)
+        else:
+            print_wall_with_climber(wall,climber)
+        
         current_node = visited[current_node]
         climber.set_position(current_node)
+        moves=moves+1
 
     print("Completed in ", moves, " moves")
 
@@ -130,6 +151,15 @@ def mark_visited(visited,climber):
 def has_visited(visited,climber):
     return visited.get(climber.pos_tuple())
 
+def get_all_holds_highest_fist(wall):
+    holds = []
+    for i in range(len(wall)):
+        for j in range(len(wall[i])):
+            if wall[i][j] == 1:
+                holds.append((i,j))
+    
+    hholds = sorted(holds, key=lambda v: v[0], reverse=True)
+    return hholds
 
 def get_all_holds(wall):
     holds = []
@@ -139,7 +169,8 @@ def get_all_holds(wall):
                 holds.append((i,j))
     return holds
 
-find_candidate_holds=get_all_holds
+#find_candidate_holds=get_all_holds
+find_candidate_holds=get_all_holds_highest_fist
 
 #find next valid moves looks through each candidate hold, and returns all valid climber positions 
 def find_next_valid_moves(climber, wall, visited):
@@ -162,7 +193,7 @@ def find_next_valid_moves(climber, wall, visited):
             limb.position = tmp
     return moves
 
-def DFS_climb(wall,climber):
+def BFS_climb(wall,climber):
     visited_dict = dict()
     visited_dict[(-1,-1,-1,-1,-1,-1,-1,-1)] = (-1,-1,-1,-1,-1,-1,-1,-1)
 
@@ -176,10 +207,27 @@ def DFS_climb(wall,climber):
             print_path(climber,wall,visited_dict)
             return
         queue.extend(find_next_valid_moves(climber,wall,visited_dict))
+    print("BFS failed unable to find path to the top")
+
+def DFS_climb(wall,climber):
+    visited_dict = dict()
+    visited_dict[(-1,-1,-1,-1,-1,-1,-1,-1)] = (-1,-1,-1,-1,-1,-1,-1,-1)
+
+    print_wall_with_climber(wall,climber)
+
+    #DFS climber
+    stack = find_next_valid_moves(climber,wall,visited_dict)
+    while len(stack) != 0:
+        climber = stack.pop(0)
+        if can_complete(climber,wall,visited_dict):
+            print_path(climber,wall,visited_dict)
+            return
+        stack = find_next_valid_moves(climber,wall,visited_dict) + stack
     print("DFS failed unable to find path to the top")
 
-test_walls=[zigzag_wall]
-#test_walls=[staircase_wall_short,staircase_wall_long,zigzag_wall]
+#test_walls=[zigzag_wall]
+test_walls=[staircase_wall_short,staircase_wall_long,zigzag_wall,big_zag]
 climber = Climber()
 for wall in test_walls:
-    DFS_climb(wall,climber)
+    BFS_climb(wall,climber)
+    #DFS_climb(wall,climber)
