@@ -1,4 +1,5 @@
 import copy
+from walls import *
 
 def manhattan_distance(A,B):
     return abs(A[0]-B[0])+abs(A[1]-B[1])
@@ -8,8 +9,6 @@ def limb_valid(a,b):
     if manhattan_distance(a.position,b.position) <= (a.length + b.length):
         return True
     return False
-
-
 
 class Limb:
     length = 0
@@ -44,14 +43,14 @@ class Climber:
     def pos_tuple(self):
         return self.left_arm.position + self.right_arm.position + self.left_leg.position + self.right_leg.position
 
-    def occupies_position(self,i,j):
-        if self.left_arm.position == (i,j):
+    def occupies_position(self,hold):
+        if self.left_arm.position == hold:
             return True
-        if self.right_arm.position == (i,j):
+        if self.right_arm.position == hold:
             return True
-        if self.left_leg.position == (i,j):
+        if self.left_leg.position == hold:
             return True
-        if self.right_leg.position == (i,j):
+        if self.right_leg.position == hold:
             return True
         return False
 
@@ -75,20 +74,13 @@ class Climber:
             limb_valid(self.left_arm,self.right_arm) and
             limb_valid(self.left_arm,self.left_leg) and
             limb_valid(self.left_arm,self.right_leg) and
-            #right arm
             limb_valid(self.right_arm,self.left_leg) and
             limb_valid(self.right_arm,self.right_leg) and
-            #
             limb_valid(self.left_leg,self.right_leg)
         ):
             return True
         return False        
 
-staircase_wall = [[1,1,1,1,1],
-[0,0,0,0,0],
-[1,1,1,1,1],
-[0,0,0,0,0],
-[1,1,1,1,1]]
 
 
 def print_wall(wall):
@@ -112,47 +104,7 @@ def print_wall_with_climber(wall,climber):
         i=i-1
     print()
 
-visited_dict = dict()
-visited_dict[(-1,-1,-1,-1,-1,-1,-1,-1)] = (-1,-1,-1,-1,-1,-1,-1,-1)
-
-def mark_visited(visited,climber):
-    visited[climber.pos_tuple()] = True
-
-def has_visited(visited,climber):
-    return visited.get(climber.pos_tuple())
-
-
 #traversal functions    
-def get_all_holds(wall):
-    holds = []
-    i=0
-    for row in wall:
-        j=0
-        for colum in row:
-            if wall[i][j] == 1:
-                holds.append((i,j))
-            j=j+1
-        i=i+1
-    return holds
-    
-def find_next_valid_moves(climber, wall, visited):
-    moves = []
-    holds = get_all_holds(wall)
-    for hold in holds:
-        copy_climber = copy.copy(climber)
-        for limb in copy_climber.Get_Limbs():
-            if climber.occupies_position(hold[0],hold[1]):
-                continue
-            tmp = limb.position
-            limb.position = hold
-
-            if copy_climber.valid() and not has_visited(visited,copy_climber):
-                visited[copy_climber.pos_tuple()] = climber.pos_tuple()
-                moves.append(copy.copy(copy_climber))
-                
-            limb.position = tmp
-    return moves
-
 def can_complete(climber,wall,visited_dict):
     for limb in climber.Get_Limbs():
         if limb.position[0] >= len(wall)-1:
@@ -160,10 +112,10 @@ def can_complete(climber,wall,visited_dict):
     return False
 
 def print_path(climber,wall,visited):
+    print("SOLUTION FOUND Printing path")
     moves=0
     current_node = climber.pos_tuple()
     while current_node != visited[current_node]:
-        #print(current_node)
         moves=moves+1
         print_wall_with_climber(wall,climber)
         current_node = visited[current_node]
@@ -172,38 +124,62 @@ def print_path(climber,wall,visited):
     print("Completed in ", moves, " moves")
 
 
+def mark_visited(visited,climber):
+    visited[climber.pos_tuple()] = True
 
-#print_wall(staircase_wall)
+def has_visited(visited,climber):
+    return visited.get(climber.pos_tuple())
+
+
+def get_all_holds(wall):
+    holds = []
+    for i in range(len(wall)):
+        for j in range(len(wall[i])):
+            if wall[i][j] == 1:
+                holds.append((i,j))
+    return holds
+
+find_candidate_holds=get_all_holds
+
+#find next valid moves looks through each candidate hold, and returns all valid climber positions 
+def find_next_valid_moves(climber, wall, visited):
+    moves = []
+    holds = find_candidate_holds(wall)
+    for hold in holds:
+        copy_climber = copy.copy(climber)
+        for limb in copy_climber.Get_Limbs():
+            #The climbing must not have a limb on the same hold
+            if climber.occupies_position(hold):
+                continue
+            tmp = limb.position
+            limb.position = hold
+
+            if copy_climber.valid() and not has_visited(visited,copy_climber):
+                #set the prior move, to the current location
+                visited[copy_climber.pos_tuple()] = climber.pos_tuple()
+                moves.append(copy.copy(copy_climber))
+                
+            limb.position = tmp
+    return moves
+
+def DFS_climb(wall,climber):
+    visited_dict = dict()
+    visited_dict[(-1,-1,-1,-1,-1,-1,-1,-1)] = (-1,-1,-1,-1,-1,-1,-1,-1)
+
+    print_wall_with_climber(wall,climber)
+
+    #DFS climber
+    queue = find_next_valid_moves(climber,wall,visited_dict)
+    while len(queue) != 0:
+        climber = queue.pop(0)
+        if can_complete(climber,wall,visited_dict):
+            print_path(climber,wall,visited_dict)
+            return
+        queue.extend(find_next_valid_moves(climber,wall,visited_dict))
+    print("DFS failed unable to find path to the top")
+
+test_walls=[zigzag_wall]
+#test_walls=[staircase_wall_short,staircase_wall_long,zigzag_wall]
 climber = Climber()
-print_wall_with_climber(staircase_wall,climber)
-
-queue = []
-moves = find_next_valid_moves(climber,staircase_wall,visited_dict)
-for move in moves:
-    queue.append(move)
-
-while len(queue) != 0:
-    climber = queue.pop(0)
-    #print_wall_with_climber(staircase_wall,climber)
-    #print()
-    #check for victory
-    if can_complete(climber,staircase_wall,visited_dict):
-        print("SOLUTION FOUND")
-        print_path(climber,staircase_wall,visited_dict)
-        exit(1)
-
-    moves = find_next_valid_moves(climber,staircase_wall,visited_dict)
-    for move in moves:
-        queue.append(move)
-
-
-
-print()
-for move in moves:
-    print(move.pos_tuple())
-
-if climber.valid():
-    print ("Valid")
-else:
-    print("invalid")
-
+for wall in test_walls:
+    DFS_climb(wall,climber)
