@@ -1,7 +1,9 @@
 import copy
+from tkinter import W
 from walls import *
 import os
 import time
+import heapq
 
 def manhattan_distance(A,B):
     return abs(A[0]-B[0])+abs(A[1]-B[1])
@@ -27,6 +29,7 @@ class Climber:
     left_leg=Limb(2,(-1,-1))
     right_leg=Limb(2,(-1,-1))
 
+#(1,1,1,1,1,1,1,1)
     def set_position(self, position_tuple):
        self.left_arm=Limb(0,(position_tuple[0],position_tuple[1])) 
        self.right_arm=Limb(0,(position_tuple[2],position_tuple[3])) 
@@ -134,7 +137,7 @@ def print_path(climber,wall,visited,animate=True):
         if(animate==True):
             os.system('cls' if os.name == 'nt' else 'clear')
             print_wall_with_climber(wall,climber)
-            time.sleep(0.1)
+            time.sleep(0.5)
         else:
             print_wall_with_climber(wall,climber)
         
@@ -225,9 +228,35 @@ def DFS_climb(wall,climber):
         stack = find_next_valid_moves(climber,wall,visited_dict) + stack
     print("DFS failed unable to find path to the top")
 
+
+def Dijkstra_climb(wall,climber):
+    distances = dict()
+    starting_vertex=(-1,-1,-1,-1,-1,-1,-1,-1)
+    distances[starting_vertex] = 0
+
+    pq = [(0,starting_vertex)]
+
+    while len(pq) > 0:
+        current_distance, current_vertex=heapq.heappop(pq)
+
+        if current_distance > distances[current_vertex]:
+            continue
+
+        moves = find_next_valid_moves(current_vertex,wall,dict())
+        weights = [1 for _ in moves]
+        for neighbour, weight in zip(moves,weights):
+            distance = current_distance + weight
+
+            if distance < distances[neighbour]:
+                distances[neighbour] = distance
+                heapq.heappush(pq,(distance,neighbour))
+
+
+
+
 #test_walls=[zigzag_wall]
 test_walls=[staircase_wall_short,staircase_wall_long,zigzag_wall,big_zag]
 climber = Climber()
 for wall in test_walls:
-    BFS_climb(wall,climber)
-    #DFS_climb(wall,climber)
+    #BFS_climb(wall,climber)
+    DFS_climb(wall,climber)
