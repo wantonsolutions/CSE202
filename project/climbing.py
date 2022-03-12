@@ -251,6 +251,7 @@ def BFS_climb(wall, climber):
         climber = queue.pop(0)
         if can_complete(climber, wall, visited_dict):
             # print_path(climber, wall, visited_dict)
+            print("Found Exit")
             return visited_dict, climber
         queue.extend(find_next_valid_moves(climber, wall, visited_dict))
     print("BFS failed unable to find path to the top")
@@ -317,8 +318,9 @@ def get_path(visited, climber):
 
 
 # test_walls=[zigzag_wall]
-test_walls = [staircase_wall_short, staircase_wall_long, zigzag_wall, big_zag]
-# test_walls = [zigzag_wall]
+test_walls = [staircase_wall_short, staircase_wall_long,
+              zigzag_wall, big_zag, large_random, random_40]
+# test_walls = [random_40]
 for i, wall in enumerate(test_walls):
     climber = Climber()
     print(f"Starting Test {i}")
@@ -333,5 +335,6 @@ for i, wall in enumerate(test_walls):
     base_climber = Climber()
     data = {"path": path, "wall": wall}
 
-    with open(f"path_{i}.pkl", 'wb') as file:
+    with open(f"./files/path_{i}.pkl", 'wb') as file:
         pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
+#
