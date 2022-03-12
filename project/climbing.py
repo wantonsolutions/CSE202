@@ -1,10 +1,14 @@
 import copy
+from email.mime import base
 from tkinter import W
 from tracemalloc import start
+
+from matplotlib.pyplot import get
 from walls import *
 import os
 import time
 import heapq
+import pickle
 
 
 def manhattan_distance(A, B):
@@ -246,8 +250,8 @@ def BFS_climb(wall, climber):
     while len(queue) != 0:
         climber = queue.pop(0)
         if can_complete(climber, wall, visited_dict):
-            print_path(climber, wall, visited_dict)
-            return
+            # print_path(climber, wall, visited_dict)
+            return visited_dict, climber
         queue.extend(find_next_valid_moves(climber, wall, visited_dict))
     print("BFS failed unable to find path to the top")
 
@@ -298,12 +302,36 @@ def Dijkstra_climb(wall, climber):
                 heapq.heappush(pq, (distance, neighbor))
 
 
+def get_path(visited, climber):
+    # Rectify Path
+    end = climber.pos_tuple()
+    start = (-1, -1, -1, -1, -1, -1, -1, -1)
+
+    path = [end]
+    while True:
+        end = visited[end]
+        path.append(end)
+        if end == start:
+            break
+    return path
+
+
 # test_walls=[zigzag_wall]
 test_walls = [staircase_wall_short, staircase_wall_long, zigzag_wall, big_zag]
-test_walls = [staircase_wall_short]
-climber = Climber()
-for wall in test_walls:
-    print("Starting Tests")
-    BFS_climb(wall, climber)
+# test_walls = [zigzag_wall]
+for i, wall in enumerate(test_walls):
+    climber = Climber()
+    print(f"Starting Test {i}")
+    visited, climber = BFS_climb(wall, climber)
     # DFS_climb(wall,climber)
     # Dijkstra_climb(wall, climber)
+
+    # Save Path
+    path = get_path(visited, climber)[::-1]
+
+    # Create Data Struct
+    base_climber = Climber()
+    data = {"path": path, "wall": wall}
+
+    with open(f"path_{i}.pkl", 'wb') as file:
+        pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
