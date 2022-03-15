@@ -218,26 +218,6 @@ def find_next_valid_moves(climber, wall, visited):
     return moves
 
 
-def find_next_valid_moves_test(climber, wall):
-    moves = []
-    holds = find_candidate_holds(wall)
-    for hold in holds:
-        copy_climber = copy.copy(climber)
-        for limb in copy_climber.Get_Limbs():
-            # The climbing must not have a limb on the same hold
-            if climber.occupies_position(hold):
-                continue
-            tmp = limb.position
-            limb.position = hold
-
-            if copy_climber.valid():
-                # set the prior move, to the current location
-                moves.append(copy.copy(copy_climber))
-
-            limb.position = tmp
-    return moves
-
-
 def BFS_climb(wall, climber):
     visited_dict = dict()
     visited_dict[(-1, -1, -1, -1, -1, -1, -1, -1)
@@ -275,34 +255,6 @@ def DFS_climb(wall, climber):
     print("DFS failed unable to find path to the top")
 
 
-def Dijkstra_climb(wall, climber):
-
-    print_wall_with_climber(wall, climber)
-
-    distances = dict()
-    starting_vertex = (-1, -1, -1, -1, -1, -1, -1, -1)
-    distances[starting_vertex] = 0
-
-    pq = [(0, starting_vertex)]
-
-    while len(pq) > 0:
-        current_distance, current_vertex = heapq.heappop(pq)
-
-        if current_distance > distances[current_vertex]:
-            continue
-
-        climber = Climber()
-        climber.set_position(current_vertex)
-        moves = find_next_valid_moves_test(climber, wall)
-        weights = [1 for _ in moves]
-        for neighbor, weight in zip(moves, weights):
-            distance = current_distance + weight
-
-            if distance < distances[neighbor]:
-                distances[neighbor] = distance
-                heapq.heappush(pq, (distance, neighbor))
-
-
 def get_path(visited, climber):
     # Rectify Path
     end = climber.pos_tuple()
@@ -326,7 +278,6 @@ for i, wall in enumerate(test_walls):
     print(f"Starting Test {i}")
     visited, climber = BFS_climb(wall, climber)
     # DFS_climb(wall,climber)
-    # Dijkstra_climb(wall, climber)
 
     # Save Path
     path = get_path(visited, climber)[::-1]
