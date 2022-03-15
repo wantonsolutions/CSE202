@@ -32,7 +32,7 @@ Generally speaking, the way we will traverse the graph is to execute the followi
 
 ### BFS Climb
 
-Our BFS implementation is pretty standard with some additions.
+Our BFS implementation is pretty standard and works off our base climbing methodology.
 
 ```python
 def BFS_climb(wall, climber):
@@ -131,7 +131,7 @@ With the reconstructed path, we can now visualize what the climb looks like!
 
 ## Example Climbs
 
-We saw much better behavior with BFS in terms or number of moves and seemingly redundant moves so the examples here were all generated with BFS. All climbs were done for a climber of equal length limbs where L=2.
+We saw much better behavior with BFS in terms or number of moves and seemingly redundant moves so the examples here were all generated with BFS. All climbs were done for a climber of equal length limbs where L=2. In the visualization, each color is consistent for a given limb and the node connecting them is merely the centroid of the hold positions and the center of the climber is a fairly abstract concept given the flexibility of the limb reaches.
 
 ### Random Wall
 
