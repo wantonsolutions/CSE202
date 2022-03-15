@@ -1,9 +1,8 @@
 # CSE 202 Project Implementation: Rock Climbing
 Jackob Getzel, Stewart Grant, Patrick Youssef
-
 ## Implementation Details
 
-The code for our implementation was written in Python for it's convenience and flexibility. We did not utilize any libraries to directly solve this problem but instead some helper libraries for plotting and data structures. The machine running the code was a linux desktop running Ubuntu 20.04 with an Intel 10900k processor with 10 cores although we did not utilize more than one thread.w
+The code for our implementation was written in Python for it's convenience and flexibility. We did not utilize any libraries to directly solve this problem but instead some helper libraries for plotting and data structures. The machine running the code was a linux desktop running Ubuntu 20.04 with an Intel 10900k processor with 10 cores although we did not utilize more than one thread.
 
 ## Code Explanation
 
